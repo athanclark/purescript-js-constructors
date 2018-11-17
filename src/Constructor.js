@@ -21,8 +21,17 @@ exports.getThisImpl = function getThisImpl(this_,l) {
     return this_[l];
 };
 
-exports.setThisImpl = function setThisImpl(this_,l,x) {
-    this_[l] = x;
+exports.insertThisImpl = function insertThisImpl(this_,l,x) {
+    var this__ = Object.create({},this_);
+    this__[l] = x;
+    return this__;
+};
+
+exports.modifyThisImpl = function modifyThisImpl(this_,l,f) {
+    var this__ = Object.create({},this_);
+    var x = this__[l];
+    this__[l] = f(x);
+    return this__;
 };
 
 
@@ -32,7 +41,9 @@ exports.newImpl = function newImpl(Cons,opts) {
 
 
 exports.setPrototypeImpl = function setPrototypeImpl(Cons,x) {
-    Cons.prototype = x;
+    var Cons_ = Cons;
+    Cons_.prototype = x;
+    return Cons_;
 };
 
 exports.setPrototypeConstructorImpl = function setPrototypeConstructorImpl(Cons,Cons_) {
