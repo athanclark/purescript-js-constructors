@@ -1,7 +1,9 @@
 "use strict";
 
-exports.mkConstructor = function mkConstructor(F) {
-    return F(this);
+exports.mkConstructorImpl = function mkConstructorImpl(f) {
+    return function Cons (opts) {
+        this = f(this,opts);
+    };
 };
 
 exports.instanceOf = function instanceOfImpl1(obj) {
@@ -31,6 +33,10 @@ exports.newImpl = function newImpl(Cons,opts) {
 
 exports.setPrototypeImpl = function setPrototypeImpl(Cons,x) {
     Cons.prototype = x;
+};
+
+exports.setPrototypeConstructorImpl = function setPrototypeConstructorImpl(Cons,Cons_) {
+    Cons.prototype.constructor = Cons_;
 };
 
 exports.setPrototypeFieldImpl = function setPrototypeFieldImpl(Cons,l,x) {

@@ -7,7 +7,9 @@
     "output"
   ],
   "dependencies": {
-    "purescript-prelude": "^4.1.0"
+    "purescript-prelude": "^4.1.0",
+    "purescript-unsafe-coerce": "^4.0.0",
+    "purescript-record": "^1.0.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0"
