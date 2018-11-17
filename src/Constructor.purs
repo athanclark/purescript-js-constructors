@@ -10,13 +10,14 @@ import Effect.Uncurried (EffectFn1, EffectFn2, EffectFn3, mkEffectFn2, runEffect
 import Unsafe.Coerce (unsafeCoerce)
 import Prim.Row (class Union, class Nub, class Cons)
 import Data.Symbol (SProxy, class IsSymbol, reflectSymbol)
+import Type.Row (class RowToList, class ListToRow, Nil)
 
 
 foreign import data Constructor :: Type -> Type -> # Type -> Type
 foreign import data Instance :: # Type -> Type -- Union of inherited fields?
 foreign import data This :: # Type -> Type
 
-                                -- FIXME this' set fields should be ()
+                                 -- FIXME this' set fields should be ()
 foreign import mkConstructorImpl :: forall opts r
                                   . (EffectFn2 (This ()) opts (This r))
                                  -> Constructor Unit opts r
@@ -38,7 +39,7 @@ mkConstructor :: forall opts r
 mkConstructor = mkConstructorImpl <<< mkEffectFn2
 
 
-foreign import instanceOf :: forall opts proto r r'. Instance r' -> Constructor proto opts r -> Boolean
+foreign import instanceOfImpl :: forall opts proto r r'. Instance r' -> Constructor proto opts r -> Boolean
 
 foreign import hasOwnProperty :: forall r. Instance r -> String -> Boolean
 
@@ -55,19 +56,24 @@ foreign import hasOwnProperty :: forall r. Instance r -> String -> Boolean
 
 
 class InheritedFields (x :: Type) (y :: # Type)
-instance inheritedFieldsNil :: InheritedFields (Constructor Unit opts r) r
--- instance inheritedFieldsCons :: ( InheritedFields proto acc
---                                 , Union acc r r'
---                                 ) => InheritedFields (Constructor props opts r) r'
+instance inheritedFieldsNil :: ListToRow Nil r => InheritedFields Unit r
+instance inheritedFieldsCons :: ( InheritedFields proto acc
+                                , Union acc r r'
+                                ) => InheritedFields (Constructor props opts r) r'
 
 
--- FIXME how are instance methods going to modify `this`?
--- TODO Instance accessors
 foreign import newImpl :: forall proto opts r r'
                         . EffectFn2
                           (Constructor proto opts r)
                           opts
                           (Instance r')
+
+new :: forall proto opts r r'
+     . InheritedFields (Constructor proto opts r) r'
+    => Constructor proto opts r
+    -> opts
+    -> Effect (Instance r')
+new = runEffectFn2 newImpl
 
 -- Consolidate all static declarations to avoid redefinitions?
 

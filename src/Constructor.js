@@ -6,7 +6,7 @@ exports.mkConstructorImpl = function mkConstructorImpl(f) {
     };
 };
 
-exports.instanceOf = function instanceOfImpl1(obj) {
+exports.instanceOfImpl = function instanceOfImpl1(obj) {
     return function instanceOfImpl2(Cons) {
         return obj instanceof Cons;
     };
