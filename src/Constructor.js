@@ -50,6 +50,12 @@ exports.setPrototypeConstructorImpl = function setPrototypeConstructorImpl(Cons,
     Cons.prototype.constructor = Cons_;
 };
 
-exports.setPrototypeFieldImpl = function setPrototypeFieldImpl(Cons,l,x) {
-    Cons.prototype[l] = x;
+exports.setPrototypeFieldImpl = function setPrototypeFieldImpl(Cons,l,f) {
+    Cons.prototype[l] = f(this);
+    return Cons;
+};
+
+
+exports.emptyInstance = function emptyInstance() {
+    return Object.create({});
 };

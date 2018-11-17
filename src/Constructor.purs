@@ -57,6 +57,7 @@ foreign import hasOwnProperty :: forall r. Instance r -> String -> Boolean
 
 class InheritedFields (x :: Type) (y :: # Type)
 instance inheritedFieldsNil :: ListToRow Nil r => InheritedFields Unit r
+instance inheritedFieldsInstance :: InheritedFields (Instance proto) proto
 instance inheritedFieldsCons :: ( InheritedFields proto acc
                                 , Union acc r r'
                                 ) => InheritedFields (Constructor props opts r) r'
@@ -75,6 +76,9 @@ new :: forall proto opts r r'
     -> Effect (Instance r')
 new = runEffectFn2 newImpl
 
+
+foreign import emptyInstance :: Effect (Instance ())
+
 -- Consolidate all static declarations to avoid redefinitions?
 
 foreign import setPrototypeImpl :: forall proto' proto opts r
@@ -83,16 +87,37 @@ foreign import setPrototypeImpl :: forall proto' proto opts r
                                    (Instance proto)
                                    (Constructor (Instance proto) opts r)
 
+setPrototype :: forall proto opts r proto'
+              . Constructor proto' opts r
+             -> Instance proto
+             -> Effect (Constructor (Instance proto) opts r)
+setPrototype = runEffectFn2 setPrototypeImpl
+
 foreign import setPrototypeConstructorImpl :: forall proto opts proto' opts' r r'
                                             . EffectFn2
                                               (Constructor proto opts r)
                                               (Constructor proto' opts' r')
                                               Unit
 
--- FIXME return a builder, potentially?
--- foreign import setPrototypeFieldImpl :: forall opts r
---                                       . EffectFn3
---                                         (Constructor proto opts r)
---                                         String
---                                         (This r -> a) Unit
+setPrototypeConstructor :: forall proto proto' opts opts' r r'
+                         . Constructor proto opts r
+                        -> Constructor proto' opts' r'
+                        -> Effect Unit
+setPrototypeConstructor = runEffectFn2 setPrototypeConstructorImpl
 
+-- FIXME return a builder, potentially?
+foreign import setPrototypeFieldImpl :: forall opts proto proto' r a
+                                      . EffectFn3
+                                        (Constructor proto opts r)
+                                        String
+                                        (This r -> a)
+                                        (Constructor proto' opts r)
+
+setPrototypeField :: forall opts proto proto' r a l
+                   . Cons l a proto proto'
+                  => IsSymbol l
+                  => Constructor (Instance proto) opts r
+                  -> SProxy l
+                  -> (This r -> a)
+                  -> Effect (Constructor (Instance proto') opts r)
+setPrototypeField c s f = runEffectFn3 setPrototypeFieldImpl c (reflectSymbol s) f
